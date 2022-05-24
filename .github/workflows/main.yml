@@ -43,6 +43,6 @@ jobs:
           source_dir: './functions'
           project_id: '${{ secrets.gcp_project_id }}'
           event_trigger_type: 'google.pubsub.topic.publish'
-          event_trigger_resource: 'projects/${{ secrets.gcp_project_id }}/narou-notify'
+          event_trigger_resource: 'projects/${{ secrets.gcp_project_id }}/topics/narou-notify'
           event_trigger_service: pubsub.googleapis.com
           
