@@ -41,8 +41,8 @@ jobs:
           entry_point: 'NotifyPubSub'
           region: 'asia-northeast1'
           source_dir: './functions'
-          project_id: '${{ env.gcp_project_id }}'
+          project_id: '${{ secrets.gcp_project_id }}'
           event_trigger_type: 'google.pubsub.topic.publish'
-          event_trigger_resource: 'projects/${{ env.gcp_project_id }}/narou-notify'
+          event_trigger_resource: 'projects/${{ secrets.gcp_project_id }}/narou-notify'
           event_trigger_service: pubsub.googleapis.com
           
