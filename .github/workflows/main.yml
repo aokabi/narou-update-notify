@@ -34,10 +34,10 @@ jobs:
 
       # Runs a single command using the runners shell
       - id: 'deploy'
-        uses: 'google-github-actions/deploy-cloud-functions@v0'
+        uses: 'google-github-actions/deploy-cloud-functions@v1'
         with:
           name: 'notify-pubsub'
-          runtime: 'go116'
+          runtime: 'go121'
           entry_point: 'NotifyPubSub'
           region: 'asia-northeast1'
           source_dir: './functions'
