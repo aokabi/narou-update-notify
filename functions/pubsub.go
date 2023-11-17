@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	api "github.com/aokabi/narou-update-notify/api"
+	_ "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
 
 	"cloud.google.com/go/firestore"
 )
