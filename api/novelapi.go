@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -49,16 +50,20 @@ type Response struct {
 	UpdatedAt      string `json:"updated_at,omitempty"`
 }
 
-func GetNovelInfo() ([]Response, error) {
+// 一つの作品の情報を返す
+func GetNovelInfo(ctx context.Context) ([]Response, error) {
 	// create a new http client
 	client := &http.Client{}
 
 	// create a new request
 	url := "https://api.syosetu.com/novelapi/api/"
 	// 小説ごとにふられるID
-	ncode := "n2267be"
+	ncode := "n2267be" // Ｒｅ：ゼロから始める異世界生活
 	respFormat := "json"
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
 	q := req.URL.Query()
 	q.Add("ncode", ncode)
 	q.Add("out", respFormat)
@@ -72,12 +77,14 @@ func GetNovelInfo() ([]Response, error) {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println(resp.Request)
-
 	// read the response body
 	response := make([]Response, 0)
 	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
 		return nil, err
+	}
+
+	if len(response) != 2 {
+		return nil, fmt.Errorf("failed to get novel info: len=%d", len(response))
 	}
 
 	return response, nil
