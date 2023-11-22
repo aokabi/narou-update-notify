@@ -2,12 +2,16 @@ module github.com/aokabi/narou-update-notify
 
 go 1.21
 
-require cloud.google.com/go/firestore v1.14.0
+require (
+	cloud.google.com/go/firestore v1.14.0
+	github.com/aws/aws-sdk-go v1.48.2
+)
 
 require (
 	cloud.google.com/go/functions v1.15.4 // indirect
 	github.com/cloudevents/sdk-go/v2 v2.14.0 // indirect
 	github.com/google/uuid v1.4.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180228061459-e0a39a4cb421 // indirect
 	github.com/modern-go/reflect2 v0.0.0-20180701023420-4b7aa43c6742 // indirect

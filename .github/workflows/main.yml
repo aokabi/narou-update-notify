@@ -44,5 +44,5 @@ jobs:
           event_trigger_type: 'google.pubsub.topic.publish'
           event_trigger_resource: 'projects/${{ secrets.gcp_project_id }}/topics/narou-notify'
           event_trigger_service: pubsub.googleapis.com
-          secret_environment_variables: 'AWS_ACCESS_KEY=projects/${{ secrets.gcp_project_id }}/secrets/cloud-functions-narou-access-token/versions/1, AWS_SECRET_ACCESS_KEY=projects/${{ secrets.gcp_project_id }}/secrets/cloud-functions-narou-secret-access-token/versions/1'
+          secret_environment_variables: 'AWS_ACCESS_KEY=projects/${{ secrets.gcp_project_id }}/secrets/cloud-functions-narou-access-token/versions/1, AWS_SECRET_ACCESS_KEY=projects/${{ secrets.gcp_project_id }}/secrets/cloud-functions-narou-secret-access-token/versions/1, TO_ADDRESS=projects/${{ secrets.gcp_project_id }}/secrets/to-address/versions/1, FROM_ADDRESS=projects/${{ secrets.gcp_project_id }}/secrets/from-address/versions/1'
           
