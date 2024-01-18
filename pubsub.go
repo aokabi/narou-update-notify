@@ -2,13 +2,18 @@ package functions
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
+	"os"
 
-	api "github.com/aokabi/narou-update-notify/api"
 	_ "github.com/GoogleCloudPlatform/functions-framework-go/funcframework"
+	api "github.com/aokabi/narou-update-notify/api"
 
 	"cloud.google.com/go/firestore"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/ses"
 )
 
 type PubSubMessage struct {
@@ -51,10 +56,18 @@ func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
 
 	latestNo := novelInfo[1].GeneralAllNo
 
-	// 更新があれば、Slackに通知
-	if no != int64(latestNo) {
-		slog.Info("novel updated", "latest", latestNo)
-		//TODO: 通知
+	// 更新がなければ終了
+	if no == int64(latestNo) {
+		slog.Info("no update")
+		return nil
+	}
+
+	// 更新があれば、メールで通知
+	subject := "なろう更新通知"
+	body := fmt.Sprintf("最新話: %d", latestNo)
+	if err := SendEmail(ctx, subject, body); err != nil {
+		slog.Error("failed to send email", err)
+		return err
 	}
 
 	// 確認済みの最新話を更新
@@ -66,6 +79,47 @@ func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
 	})
 	if err != nil {
 		slog.Error("failed to update latest", err)
+		return err
+	}
+
+	return nil
+}
+
+func SendEmail(ctx context.Context, subject, body string) error {
+	// Create a new session using your AWS credentials
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String("ap-northeast-1"), // Replace with your desired AWS region
+	})
+	if err != nil {
+		return err
+	}
+
+	// Create a new SES service client
+	svc := ses.New(sess)
+
+	// Specify the email parameters
+	input := &ses.SendEmailInput{
+		Destination: &ses.Destination{
+			ToAddresses: []*string{
+				aws.String(os.Getenv("TO_ADDRESS")), // Replace with the recipient's email address
+			},
+		},
+		Message: &ses.Message{
+			Body: &ses.Body{
+				Text: &ses.Content{
+					Data: aws.String(body), // Replace with the email body content
+				},
+			},
+			Subject: &ses.Content{
+				Data: aws.String(subject), // Replace with the email subject
+			},
+		},
+		Source: aws.String(os.Getenv("FROM_ADDRESS")), // Replace with the sender's email address
+	}
+
+	// Send the email
+	_, err = svc.SendEmail(input)
+	if err != nil {
 		return err
 	}
 
