@@ -3,7 +3,7 @@ resource "google_cloud_scheduler_job" "job" {
   description = "narou-notify cloud functionを定期実行する"
   region   = "asia-northeast1"
   time_zone = "Asia/Tokyo"
-  schedule = "1 * * * *"
+  schedule = "5 * * * *"
 
   retry_config {
     retry_count = 2
