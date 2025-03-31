@@ -68,7 +68,7 @@ func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
 		}
 
 		// 更新があれば、メールで通知
-		subject := fmt.Sprintf("なろう更新通知(%s)", episode.title)
+		subject := fmt.Sprintf("なろう更新通知(%s)", episode.Title)
 		body := fmt.Sprintf("最新話: %d", latestNo)
 		if err := SendEmail(ctx, subject, body); err != nil {
 			slog.Error("failed to send email", err)
