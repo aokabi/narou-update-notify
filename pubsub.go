@@ -61,10 +61,10 @@ func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
 		}
 
 		latestNo := novelInfo[1].GeneralAllNo
-		// 更新がなければ終了
+		// 更新がなければ次の作品へ
 		if int64(episode.LatestEpisodeNo) == int64(latestNo) {
-			slog.Info("no update")
-			return nil
+			slog.Info("no update for ncode:", c)
+			continue
 		}
 
 		// 更新があれば、メールで通知
