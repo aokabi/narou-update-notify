@@ -20,6 +20,17 @@ type PubSubMessage struct {
 	Data []byte `json:"data"`
 }
 
+type ncode = string
+
+type latestEpisodes struct {
+	Episodes map[ncode]episodeInfo `firestore:"episodes"`
+}
+
+type episodeInfo struct {
+	LatestEpisodeNo int    `firestore:"latest_episode_no"`
+	title           string `firestore:"title"`
+}
+
 func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
 	// 確認済みの最新話を取得
 	client, err := firestore.NewClient(
@@ -31,55 +42,49 @@ func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
 	}
 	defer client.Close()
 
-	doc, err := client.Collection("state").Doc("latest").Get(ctx)
+	doc, err := client.Collection("latestEpisodes").Doc("latest").Get(ctx)
 	if err != nil {
 		slog.Error("failed to get document", err)
 		return err
 	}
-	noAny, err := doc.DataAt("no")
-	if err != nil {
-		slog.Error("failed to get number", err)
-		return err
-	}
-	no, ok := noAny.(int64)
-	if !ok {
-		slog.Error("failed to convert number", err, "no", noAny)
+	var latests latestEpisodes
+	if err := doc.DataTo(&latests); err != nil {
+		slog.Error("failed to unmarshal document", err)
 		return err
 	}
 
-	// 最新話を取得
-	novelInfo, err := api.GetNovelInfo(ctx)
-	if err != nil {
-		slog.Error("failed to get novel info", err)
-		return err
-	}
+	for c, episode := range latests.Episodes {
+		novelInfo, err := api.GetNovelInfo(ctx, c)
+		if err != nil {
+			slog.Error("failed to get novel info", err)
+			return err
+		}
 
-	latestNo := novelInfo[1].GeneralAllNo
+		latestNo := novelInfo[1].GeneralAllNo
+		// 更新がなければ終了
+		if int64(episode.LatestEpisodeNo) == int64(latestNo) {
+			slog.Info("no update")
+			return nil
+		}
 
-	// 更新がなければ終了
-	if no == int64(latestNo) {
-		slog.Info("no update")
-		return nil
-	}
+		// 更新があれば、メールで通知
+		subject := fmt.Sprintf("なろう更新通知(%s)", episode.title)
+		body := fmt.Sprintf("最新話: %d", latestNo)
+		if err := SendEmail(ctx, subject, body); err != nil {
+			slog.Error("failed to send email", err)
+			return err
+		}
 
-	// 更新があれば、メールで通知
-	subject := "なろう更新通知"
-	body := fmt.Sprintf("最新話: %d", latestNo)
-	if err := SendEmail(ctx, subject, body); err != nil {
-		slog.Error("failed to send email", err)
-		return err
-	}
-
-	// 確認済みの最新話を更新
-	_, err = client.Collection("state").Doc("latest").Update(ctx, []firestore.Update{
-		{
-			Path:  "no",
-			Value: latestNo,
-		},
-	})
-	if err != nil {
-		slog.Error("failed to update latest", err)
-		return err
+		// 確認済みの最新話を更新
+		if _, err := client.Collection("latestEpisodes").Doc("latest").Update(ctx, []firestore.Update{
+			{
+				Path:  fmt.Sprintf("episodes.%s.latest_episode_no", c),
+				Value: latestNo,
+			},
+		}); err != nil {
+			slog.Error("failed to update document", err)
+			return err
+		}
 	}
 
 	return nil

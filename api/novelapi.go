@@ -51,14 +51,13 @@ type Response struct {
 }
 
 // 一つの作品の情報を返す
-func GetNovelInfo(ctx context.Context) ([]Response, error) {
+// ncode: 小説ごとにふられるID
+func GetNovelInfo(ctx context.Context, ncode string) ([]Response, error) {
 	// create a new http client
 	client := &http.Client{}
 
 	// create a new request
 	url := "https://api.syosetu.com/novelapi/api/"
-	// 小説ごとにふられるID
-	ncode := "n2267be" // Ｒｅ：ゼロから始める異世界生活
 	respFormat := "json"
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
