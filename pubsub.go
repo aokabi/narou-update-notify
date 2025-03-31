@@ -28,7 +28,7 @@ type latestEpisodes struct {
 
 type episodeInfo struct {
 	LatestEpisodeNo int    `firestore:"latest_episode_no"`
-	title           string `firestore:"title"`
+	Title           string `firestore:"title"`
 }
 
 func NotifyPubSub(ctx context.Context, _ PubSubMessage) error {
